@@ -82,6 +82,7 @@ public class ChatScreen {
                 if (otherChatScreen2 != null) {
                     otherChatScreen2.updateUsersList(newUser);
                 }
+                addUserButton.setEnabled(false);
             }
         });
 
