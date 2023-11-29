@@ -24,6 +24,8 @@ public class ChatScreen {
     private ChatScreen otherChatScreen1; // Ссылка на другой экземпляр ChatScreen
     private ChatScreen otherChatScreen2; // Ссылка на еще один экземпляр ChatScreen
 
+
+
     public ChatScreen() {
         // Добавляем подсказку о необходимости регистрации
         JOptionPane.showMessageDialog(null,
@@ -141,9 +143,20 @@ public class ChatScreen {
     public void updateChatArea() {
         SwingUtilities.invokeLater(() -> {
             chatApp.readAndPrintChatHistory(chatTextArea);
+
+            // Добавляем отображение личных сообщений текущего пользователя
+            User currentUser = getCurrentUser();
+            if (currentUser != null) {
+                List<String> privateMessages = currentUser.getPrivateMessages();
+                for (String privateMessage : privateMessages) {
+                    chatTextArea.append(privateMessage + "\n");
+                }
+            }
+
             chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
         });
     }
+
 
     public void sendMessage(String recipient, String message) {
         if (!users.isEmpty()) {
@@ -161,11 +174,18 @@ public class ChatScreen {
     }
 
     public void sendPrivateMessage(User recipient, String message) {
-        if (!users.isEmpty()) {
-            User currentUser = users.get(users.size() - 1);
-            chatApp.writeMessage(currentUser.getUsername(), recipient.getUsername(), "[Личное сообщение для] " + recipient.getUsername() + ": " + message);
+        User currentUser = getCurrentUser();
+        if (currentUser != null && recipient != null) {
+            // Отправляем личное сообщение
+            chatApp.writePrivateMessage(currentUser.getUsername(), recipient.getUsername(), message);
+
+            // Сохраняем личное сообщение у отправителя и получателя
+            currentUser.addPrivateMessage("[Личное сообщение для] " + recipient.getUsername() + ": " + message);
+            recipient.addPrivateMessage("[Личное сообщение от] " + currentUser.getUsername() + ": " + message);
+
             updateChatArea();
-            // Добавляем обновление чата на других экранах
+
+            // Обновляем чат на других экранах
             if (otherChatScreen1 != null) {
                 otherChatScreen1.updateChatArea();
             }
@@ -174,6 +194,7 @@ public class ChatScreen {
             }
         }
     }
+
 
     // Метод для установки ссылки на другие экземпляры ChatScreen
     public void setOtherChatScreens(ChatScreen otherChatScreen1, ChatScreen otherChatScreen2) {

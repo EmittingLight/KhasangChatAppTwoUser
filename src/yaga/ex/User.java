@@ -1,16 +1,28 @@
 package yaga.ex;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class User {
     private String username;
+    private List<String> privateMessages;
 
     public User(String username) {
         this.username = username;
+        this.privateMessages = new ArrayList<>();
     }
 
     public String getUsername() {
         return username;
+    }
+
+    public List<String> getPrivateMessages() {
+        return privateMessages;
+    }
+
+    public void addPrivateMessage(String message) {
+        privateMessages.add(message);
     }
 
     @Override

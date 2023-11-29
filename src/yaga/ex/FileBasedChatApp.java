@@ -76,4 +76,20 @@ public class FileBasedChatApp {
             e.printStackTrace();
         }
     }
+
+    public void writePrivateMessage(String sender, String recipient, String message) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        String formattedMessage = dateFormat.format(new Date()) + " - " + sender + " -> " + recipient + ": " + message;
+
+        // Определите путь к файлу для личных сообщений
+        String privateChatFileName = "private_chat_" + sender + "_" + recipient + ".txt";
+
+        try (FileWriter fileWriter = new FileWriter(privateChatFileName, true);
+             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+            bufferedWriter.write(formattedMessage);
+            bufferedWriter.newLine();
+        } catch (IOException e) {
+            System.err.println("Ошибка при записи в файл: " + e.getMessage());
+        }
+    }
 }
