@@ -25,7 +25,6 @@ public class ChatScreen {
     private ChatScreen otherChatScreen2; // Ссылка на еще один экземпляр ChatScreen
 
 
-
     public ChatScreen() {
         // Добавляем подсказку о необходимости регистрации
         JOptionPane.showMessageDialog(null,
@@ -61,9 +60,16 @@ public class ChatScreen {
                     int selectedIndex = userList.getSelectedIndex();
                     if (selectedIndex != -1) {
                         User selectedUser = listModel.getElementAt(selectedIndex);
-                        String message = JOptionPane.showInputDialog("Введите личное сообщение для " + selectedUser.getUsername());
-                        if (message != null && !message.isEmpty()) {
-                            sendPrivateMessage(selectedUser, message);
+                        // Добавляем проверку, чтобы предотвратить выбор текущего пользователя
+                        User currentUser = getCurrentUser();
+                        if (selectedUser != null && !selectedUser.equals(currentUser)) {
+                            String message = JOptionPane.showInputDialog("Введите личное сообщение для " + selectedUser.getUsername());
+                            if (message != null && !message.isEmpty()) {
+                                sendPrivateMessage(selectedUser, message);
+                            }
+                        } else {
+                            // Всплывающее сообщение, если пользователь пытается отправить сообщение самому себе
+                            JOptionPane.showMessageDialog(frame, "Самому себе нельзя отправить сообщение", "Ошибка", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 }
