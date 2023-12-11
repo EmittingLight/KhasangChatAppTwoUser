@@ -28,9 +28,9 @@ public class FileBasedChatApp {
 
     //Метод записывает сообщение в файл чата.
     public void writeMessage(String sender, String recipient, String message) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-        String formattedMessage = dateFormat.format(new Date()) + " - " + sender + ": " + message;
-
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String formattedDate = dateFormat.format(new Date());
+        String formattedMessage = formattedDate + " "+ sender + ": " + message;
 
         try (FileWriter fileWriter = new FileWriter(chatFileName, true);
              BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
@@ -40,6 +40,7 @@ public class FileBasedChatApp {
             System.err.println("Ошибка при записи в файл: " + e.getMessage());
         }
     }
+
 
     //Метод считывает и выводит историю чата в текстовую область
     public void readAndPrintChatHistory(JTextArea chatTextArea) {

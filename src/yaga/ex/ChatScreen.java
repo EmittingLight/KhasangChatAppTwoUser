@@ -6,7 +6,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ChatScreen {
@@ -180,14 +182,16 @@ public class ChatScreen {
     }
 
     public void sendPrivateMessage(User recipient, String message) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String formattedDate = dateFormat.format(new Date());
         User currentUser = getCurrentUser();
         if (currentUser != null && recipient != null) {
             // Отправляем личное сообщение
             chatApp.writePrivateMessage(currentUser.getUsername(), recipient.getUsername(), message);
 
             // Сохраняем личное сообщение у отправителя и получателя
-            currentUser.addPrivateMessage("[Личное сообщение для] " + recipient.getUsername() + ": " + message);
-            recipient.addPrivateMessage("[Личное сообщение от] " + currentUser.getUsername() + ": " + message);
+            currentUser.addPrivateMessage(formattedDate + "[ЛС для] " + recipient.getUsername() + ": " + message);
+            recipient.addPrivateMessage(formattedDate + " [ЛС от] " + currentUser.getUsername() + ": " + message);
 
             updateChatArea();
 
