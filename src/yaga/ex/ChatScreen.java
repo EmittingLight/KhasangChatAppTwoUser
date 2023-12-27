@@ -15,17 +15,12 @@ import java.util.List;
 
 public class ChatScreen {
     private final JTextPane chatTextPane;
-    //private final JTextArea chatTextArea;
     private final JScrollPane chatScrollPane;
     private final FileBasedChatApp chatApp;
-
     private final List<User> users = new ArrayList<>(); // Список пользователей
-
     private JList<User> userList; // Список пользователей
     private DefaultListModel<User> listModel; // Модель для списка пользователей
-
     private JFrame frame;
-
     private ChatScreen otherChatScreen1; // Ссылка на другой экземпляр ChatScreen
     private ChatScreen otherChatScreen2; // Ссылка на еще один экземпляр ChatScreen
 
@@ -37,7 +32,7 @@ public class ChatScreen {
                 "Регистрация",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        frame = new JFrame("Chat App");
+        frame = new JFrame("Приложение Чат");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 600);
         frame.setLayout(new BorderLayout());
@@ -48,9 +43,7 @@ public class ChatScreen {
         frame.add(chatScrollPane, BorderLayout.CENTER);
 
 
-
         JTextField messageField = getjTextField();
-
         frame.add(messageField, BorderLayout.SOUTH);
 
         listModel = new DefaultListModel<>();
@@ -59,6 +52,22 @@ public class ChatScreen {
         JScrollPane userListScrollPane = new JScrollPane(userList);
         frame.add(userListScrollPane, BorderLayout.EAST);
 
+        messageField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                User currentUser = getCurrentUser();
+                if (currentUser == null) {
+                    // Пользователь не зарегистрирован, выводим предупреждение
+                    JOptionPane.showMessageDialog(frame,
+                            "Для использования чата необходимо зарегистрироваться.",
+                            "Регистрация",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+
+        frame.add(messageField, BorderLayout.SOUTH);
+
         userList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -66,7 +75,6 @@ public class ChatScreen {
                     int selectedIndex = userList.getSelectedIndex();
                     if (selectedIndex != -1) {
                         User selectedUser = listModel.getElementAt(selectedIndex);
-                        // Добавляем проверку, чтобы предотвратить выбор текущего пользователя
                         User currentUser = getCurrentUser();
                         if (selectedUser != null && !selectedUser.equals(currentUser)) {
                             String message = JOptionPane.showInputDialog("Введите личное сообщение для " + selectedUser.getUsername());
@@ -74,7 +82,6 @@ public class ChatScreen {
                                 sendPrivateMessage(selectedUser, message);
                             }
                         } else {
-                            // Всплывающее сообщение, если пользователь пытается отправить сообщение самому себе
                             JOptionPane.showMessageDialog(frame, "Самому себе нельзя отправить сообщение", "Ошибка", JOptionPane.ERROR_MESSAGE);
                         }
                     }
@@ -134,11 +141,18 @@ public class ChatScreen {
         messageField.addActionListener(e -> {
             if (!messageField.getText().isEmpty() && !messageField.getText().equals("Введите текст")) {
                 User currentUser = getCurrentUser();
+                // Проверяем, зарегистрирован ли пользователь
                 if (currentUser != null) {
                     String message = messageField.getText();
                     sendMessage(String.valueOf(currentUser), message);
                     messageField.setText("");
                     messageField.setForeground(Color.GRAY);
+                } else {
+                    // Пользователь не зарегистрирован, выводим предупреждение
+                    JOptionPane.showMessageDialog(frame,
+                            "Для написания сообщения необходимо зарегистрироваться.",
+                            "Предупреждение",
+                            JOptionPane.WARNING_MESSAGE);
                 }
             }
         });
@@ -151,10 +165,6 @@ public class ChatScreen {
         }
         return null;
     }
-
-
-
-
 
     public void sendMessage(String recipient, String message) {
         if (!users.isEmpty()) {
@@ -224,11 +234,9 @@ public class ChatScreen {
                     appendFormattedLine(chatTextPane, privateMessage, privateMessageAttrs);
                 }
             }
-
             chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
         });
     }
-
 
     // Метод для установки ссылки на другие экземпляры ChatScreen
     public void setOtherChatScreens(ChatScreen otherChatScreen1, ChatScreen otherChatScreen2) {

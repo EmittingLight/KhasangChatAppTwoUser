@@ -42,8 +42,6 @@ public class FileBasedChatApp {
             System.err.println("Ошибка при записи в файл: " + e.getMessage());
         }
     }
-
-
     //Метод считывает и выводит историю чата в текстовую область
     public void readAndPrintChatHistory(JTextPane chatTextPane) {
         try (FileReader fileReader = new FileReader(chatFileName);
