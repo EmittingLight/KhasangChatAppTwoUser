@@ -1,6 +1,8 @@
 package yaga.ex;
 
 import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -12,7 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 public class ChatScreen {
-    private final JTextArea chatTextArea;
+    private final JTextPane chatTextPane;
+    //private final JTextArea chatTextArea;
     private final JScrollPane chatScrollPane;
     private final FileBasedChatApp chatApp;
 
@@ -39,10 +42,11 @@ public class ChatScreen {
         frame.setSize(600, 600);
         frame.setLayout(new BorderLayout());
 
-        chatTextArea = new JTextArea();
-        chatTextArea.setEditable(false);
-        chatScrollPane = new JScrollPane(chatTextArea);
+        chatTextPane = new JTextPane();
+        chatTextPane.setEditable(false);
+        chatScrollPane = new JScrollPane(chatTextPane);
         frame.add(chatScrollPane, BorderLayout.CENTER);
+
 
 
         JTextField messageField = getjTextField();
@@ -104,7 +108,7 @@ public class ChatScreen {
 
         new Thread(() -> chatApp.monitorChatFile(this)).start();
 
-        chatApp.readAndPrintChatHistory(chatTextArea);
+        chatApp.readAndPrintChatHistory(chatTextPane);
     }
 
     private JTextField getjTextField() {
@@ -148,22 +152,8 @@ public class ChatScreen {
         return null;
     }
 
-    public void updateChatArea() {
-        SwingUtilities.invokeLater(() -> {
-            chatApp.readAndPrintChatHistory(chatTextArea);
 
-            // Добавляем отображение личных сообщений текущего пользователя
-            User currentUser = getCurrentUser();
-            if (currentUser != null) {
-                List<String> privateMessages = currentUser.getPrivateMessages();
-                for (String privateMessage : privateMessages) {
-                    chatTextArea.append(privateMessage + "\n");
-                }
-            }
 
-            chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
-        });
-    }
 
 
     public void sendMessage(String recipient, String message) {
@@ -190,9 +180,13 @@ public class ChatScreen {
             chatApp.writePrivateMessage(currentUser.getUsername(), recipient.getUsername(), message);
 
             // Сохраняем личное сообщение у отправителя и получателя
-            currentUser.addPrivateMessage(formattedDate + "[ЛС для] " + recipient.getUsername() + ": " + message);
-            recipient.addPrivateMessage(formattedDate + " [ЛС от] " + currentUser.getUsername() + ": " + message);
+            String outgoingPrivateMessage = formattedDate + "[ЛС для] " + recipient.getUsername() + ": " + message;
+            currentUser.addPrivateMessage(outgoingPrivateMessage);
 
+            String incomingPrivateMessage = formattedDate + " [ЛС от] " + currentUser.getUsername() + ": " + message;
+            recipient.addPrivateMessage(incomingPrivateMessage);
+
+            // Обновляем текстовую область чата
             updateChatArea();
 
             // Обновляем чат на других экранах
@@ -203,6 +197,36 @@ public class ChatScreen {
                 otherChatScreen2.updateChatArea();
             }
         }
+    }
+
+    // Метод для форматированного добавления строки в текстовую область
+    private void appendFormattedLine(JTextPane chatTextPane, String line, SimpleAttributeSet attrs) {
+        try {
+            chatTextPane.getDocument().insertString(chatTextPane.getDocument().getLength(), line + "\n", attrs);
+        } catch (javax.swing.text.BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Метод для обновления текстовой области чата с учетом личных сообщений
+    public void updateChatArea() {
+        SwingUtilities.invokeLater(() -> {
+            chatApp.readAndPrintChatHistory(chatTextPane);
+
+            // Добавляем отображение личных сообщений текущего пользователя
+            User currentUser = getCurrentUser();
+            if (currentUser != null) {
+                List<String> privateMessages = currentUser.getPrivateMessages();
+                SimpleAttributeSet privateMessageAttrs = new SimpleAttributeSet();
+                StyleConstants.setForeground(privateMessageAttrs, java.awt.Color.RED);
+
+                for (String privateMessage : privateMessages) {
+                    appendFormattedLine(chatTextPane, privateMessage, privateMessageAttrs);
+                }
+            }
+
+            chatScrollPane.getVerticalScrollBar().setValue(chatScrollPane.getVerticalScrollBar().getMaximum());
+        });
     }
 
 

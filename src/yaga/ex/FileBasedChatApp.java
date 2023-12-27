@@ -1,6 +1,8 @@
 package yaga.ex;
 
 import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.io.*;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
@@ -43,16 +45,48 @@ public class FileBasedChatApp {
 
 
     //Метод считывает и выводит историю чата в текстовую область
-    public void readAndPrintChatHistory(JTextArea chatTextArea) {
+    public void readAndPrintChatHistory(JTextPane chatTextPane) {
         try (FileReader fileReader = new FileReader(chatFileName);
              BufferedReader bufferedReader = new BufferedReader(fileReader)) {
-            chatTextArea.setText("");  // Очистить текстовую область перед добавлением новой истории чата
+            chatTextPane.setText("");  // Очистить текстовую область перед добавлением новой истории чата
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                chatTextArea.append(line + "\n");
+                appendFormattedLine(chatTextPane, line);
             }
         } catch (IOException e) {
             System.err.println("Ошибка при чтении файла: " + e.getMessage());
+        }
+    }
+
+    // Вспомогательный метод для форматированного добавления строки в JTextPane
+    private void appendFormattedLine(JTextPane chatTextPane, String line) {
+        // Разбиваем строку на компоненты: дата, логин, сообщение
+        String[] components = line.split(" ", 4);
+
+        if (components.length == 4) {
+            String formattedDate = components[0] + " " + components[1];
+            String sender = components[2].substring(0, components[2].length() - 1); // Удаляем ":" в конце логина
+            String message = components[3];
+
+            SimpleAttributeSet dateAttrs = new SimpleAttributeSet();
+            StyleConstants.setForeground(dateAttrs, java.awt.Color.BLUE);
+
+            SimpleAttributeSet senderAttrs = new SimpleAttributeSet();
+            StyleConstants.setForeground(senderAttrs, java.awt.Color.GREEN);
+
+            SimpleAttributeSet messageAttrs = new SimpleAttributeSet();
+            StyleConstants.setForeground(messageAttrs, java.awt.Color.BLACK);
+
+            try {
+                chatTextPane.getStyledDocument().insertString(chatTextPane.getDocument().getLength(), formattedDate + " ", dateAttrs);
+                chatTextPane.getStyledDocument().insertString(chatTextPane.getDocument().getLength(), sender + ": ", senderAttrs);
+                chatTextPane.getStyledDocument().insertString(chatTextPane.getDocument().getLength(), message + "\n", messageAttrs);
+            } catch (javax.swing.text.BadLocationException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Если строка не соответствует ожидаемому формату, добавляем как есть
+            chatTextPane.setText(chatTextPane.getText() + line + "\n");
         }
     }
 
